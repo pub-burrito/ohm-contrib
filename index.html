@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Ohm-contrib by cyx</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Ohm-contrib</h1>
+        <p>A collection of decoupled drop-in modules for Ohm</p>
+        <p class="view"><a href="https://github.com/cyx/ohm-contrib">View the Project on GitHub <small>cyx/ohm-contrib</small></a></p>
+        <ul>
+          <li><a href="https://github.com/cyx/ohm-contrib/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/cyx/ohm-contrib/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/cyx/ohm-contrib">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>ohm-contrib</h1>
+
+<p>A collection of drop-in modules for Ohm.</p>
+
+<p>If you're upgrading from 0.1.x, see <a href="#upgrade">the changes below</a></p>
+
+<h2>Quick Overview</h2>
+
+<div class="highlight">
+<pre><span class="nb">require</span> <span class="s1">'ohm'</span>
+<span class="nb">require</span> <span class="s1">'ohm/contrib'</span>
+
+<span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Timestamps</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">DataTypes</span>
+
+  <span class="n">attribute</span> <span class="ss">:amount</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="no">Decimal</span>
+  <span class="n">attribute</span> <span class="ss">:url</span>
+  <span class="n">attribute</span> <span class="ss">:poster_email</span>
+  <span class="n">attribute</span> <span class="ss">:slug</span>
+<span class="k">end</span>
+
+<span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">create</span>
+
+<span class="n">post</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">Time</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">post</span><span class="o">.</span><span class="n">update_at</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">Time</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+</pre>
+</div>
+
+
+<p>It's important to note that <code>created_at</code> and <code>update_at</code> both store
+times as a unix timestamp for efficiency.</p>
+
+<h2>Ohm::Callbacks</h2>
+
+<p><strong>Note:</strong> Macro-style callbacks have been removed in version 1.0.x.
+Please use instance style callbacks.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="n">attribute</span> <span class="ss">:status</span>
+
+  <span class="k">def</span> <span class="nf">before_create</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">"pending"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">after_save</span>
+    <span class="c1"># do something here</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<h2>Ohm::DataTypes</h2>
+
+<p>If you don't already know, Ohm 1.0 already supports typecasting out of
+the box by taking a <code>lambda</code> parameter. An example best explains:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="n">attribute</span> <span class="ss">:price</span><span class="p">,</span> <span class="nb">lambda</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">x</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>What <code>Ohm::DataTypes</code> does is define all of these lambdas for you,
+so we don't have to manually define how to cast an Integer, Float,
+Decimal, Time, Date, etc.</p>
+
+<h3>DataTypes: Basic example</h3>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">DataTypes</span>
+
+  <span class="n">attribute</span> <span class="ss">:price</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="no">Decimal</span>
+  <span class="n">attribute</span> <span class="ss">:start_of_sale</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="no">Time</span>
+  <span class="n">attribute</span> <span class="ss">:end_of_sale</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="no">Time</span>
+  <span class="n">attribute</span> <span class="ss">:priority</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="nb">Integer</span>
+  <span class="n">attribute</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="nb">Float</span>
+<span class="k">end</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="s2">"127.99"</span><span class="p">)</span>
+<span class="n">product</span><span class="o">.</span><span class="n">price</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">BigDecimal</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">start_of_sale</span><span class="p">:</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">rfc2822</span><span class="p">)</span>
+<span class="n">product</span><span class="o">.</span><span class="n">start_of_sale</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">Time</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">end_of_sale</span><span class="p">:</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">rfc2822</span><span class="p">)</span>
+<span class="n">product</span><span class="o">.</span><span class="n">end_of_sale</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">Time</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">priority</span><span class="p">:</span> <span class="s2">"100"</span><span class="p">)</span>
+<span class="n">product</span><span class="o">.</span><span class="n">priority</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="nb">Integer</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">rating</span><span class="p">:</span> <span class="s2">"5.5"</span><span class="p">)</span>
+<span class="n">product</span><span class="o">.</span><span class="n">rating</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="nb">Float</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+</pre>
+</div>
+
+
+<h3>DataTypes: Advanced example</h3>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">DataTypes</span>
+
+  <span class="n">attribute</span> <span class="ss">:meta</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="no">Hash</span>
+  <span class="n">attribute</span> <span class="ss">:sizes</span><span class="p">,</span> <span class="no">Type</span><span class="o">::</span><span class="nb">Array</span>
+<span class="k">end</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="no">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">meta</span><span class="p">:</span> <span class="p">{</span> <span class="n">resolution</span><span class="p">:</span> <span class="s1">'1280x768'</span><span class="p">,</span> <span class="n">battery</span><span class="p">:</span> <span class="s1">'8 hours'</span> <span class="p">},</span>
+                         <span class="n">sizes</span><span class="p">:</span> <span class="o">[</span><span class="s1">'XS S M L XL'</span><span class="o">]</span><span class="p">)</span>
+
+<span class="n">product</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="no">Hash</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span><span class="o">.</span><span class="n">meta</span> <span class="o">==</span> <span class="p">{</span> <span class="n">resolution</span><span class="p">:</span> <span class="s1">'1280x768'</span><span class="p">,</span> <span class="n">battery</span><span class="p">:</span> <span class="s1">'8 hours'</span> <span class="p">}</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">kind_of?</span><span class="p">(</span><span class="nb">Array</span><span class="p">)</span>
+<span class="c1"># =&gt; true</span>
+
+<span class="n">product</span><span class="o">.</span><span class="n">sizes</span> <span class="o">==</span> <span class="o">[</span><span class="s1">'XS S M L XL'</span><span class="o">]</span>
+<span class="c1"># =&gt; true</span>
+</pre>
+</div>
+
+
+<h2>Ohm::Slug</h2>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Slug</span>
+
+  <span class="n">attribute</span> <span class="ss">:title</span>
+
+  <span class="k">def</span> <span class="nf">to_s</span>
+    <span class="n">title</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="s2">"Using Ohm contrib 1.0"</span><span class="p">)</span>
+<span class="n">post</span><span class="o">.</span><span class="n">to_param</span> <span class="o">==</span> <span class="s2">"1-using-ohm-contrib-1.0"</span>
+<span class="c1"># =&gt; true</span>
+</pre>
+</div>
+
+
+<p>By default, <code>Ohm::Slug</code> tries to load iconv in order to transliterate
+non-ascii characters.</p>
+
+<div class="highlight">
+<pre><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s2">"Décor"</span><span class="p">)</span>
+<span class="n">post</span><span class="o">.</span><span class="n">to_param</span> <span class="o">==</span> <span class="s2">"2-decor"</span>
+</pre>
+</div>
+
+
+<h2>Ohm::Versioned</h2>
+
+<p>For cases where you expect people to be editing long pieces of
+content concurrently (the most obvious example would be a CMS with multiple
+moderators), then you need to put some kind of versioning in place.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Model</span>
+  <span class="kp">include</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">Versioned</span>
+
+  <span class="n">attribute</span> <span class="ss">:title</span>
+  <span class="n">attribute</span> <span class="ss">:content</span>
+<span class="k">end</span>
+
+<span class="n">a1</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s2">"Foo Bar"</span><span class="p">,</span> <span class="ss">:content</span> <span class="o">=&gt;</span> <span class="s2">"Lorem ipsum"</span><span class="p">)</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="no">Article</span><span class="o">[</span><span class="n">a1</span><span class="o">.</span><span class="n">id</span><span class="o">]</span>
+
+<span class="c1"># At this point, a2 will be stale.</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="s2">"Foo Bar Baz"</span><span class="p">)</span>
+
+<span class="k">begin</span>
+  <span class="n">a2</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s2">"Bar Baz"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="no">Ohm</span><span class="o">::</span><span class="no">VersionConflict</span> <span class="o">=&gt;</span> <span class="n">ex</span>
+  <span class="n">ex</span><span class="o">.</span><span class="n">attributes</span> <span class="o">==</span> <span class="p">{</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s2">"Bar Baz"</span><span class="p">,</span> <span class="ss">:_version</span> <span class="o">=&gt;</span> <span class="s2">"1"</span><span class="p">,</span> <span class="ss">:content</span> <span class="o">=&gt;</span> <span class="s2">"Lorem ipsum"</span> <span class="p">}</span>
+  <span class="c1"># =&gt; true</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p><a name="upgrade"></a></p>
+
+<h2>Important Upgrade notes from 0.1.x</h2>
+
+<p>The following lists the major changes:</p>
+
+<ol>
+<li>
+<code>Ohm::Typecast</code> has been removed in favor of <code>Ohm::DatTypes</code>.</li>
+<li>
+<code>Ohm::Timestamping</code> has been renamed to <code>Ohm::Timestamps</code>.</li>
+<li>
+<code>Ohm::Timestamps</code> now store times as a UNIX Timestamp.</li>
+<li>`All Ohm validation related plugins have been removed.
+See <a href="http://github.com/soveran/scrivener">scrivener</a> instead.</li>
+<li>
+<code>Ohm::Boundaries</code> has been removed.</li>
+<li>Ohm::Contrib no longer uses <code>autoload</code>. You can either
+<code>require 'ohm/contrib', which requires everything, or you
+can</code>require ohm/datatypes` for example if you want to cherry
+pick your requires.</li>
+<li>
+<code>Ohm::Callbacks</code> no longer provides macro style callbacks, i.e.
+<code>after :create, :do_something</code>. Use instance callbacks instead.</li>
+</ol>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/cyx">cyx</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
