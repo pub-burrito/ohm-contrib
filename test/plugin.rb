@@ -35,7 +35,7 @@ private
   end
 
   def after_save
-    comments.key.sadd(Comment.create.id)
+    redis.call("SADD", comments.key, Comment.create.id)
   end
 end
 
@@ -185,7 +185,7 @@ scope do
     assert p.bought_at.kind_of?(Time)
     assert_equal time, p.bought_at
 
-    assert_equal "2011-11-22 00:00:00 UTC", p.key.hget(:bought_at)
+    assert_equal "2011-11-22 00:00:00 UTC", p.get(:bought_at)
     assert_equal "2011-11-22 00:00:00 UTC", p.bought_at.to_s
   end
 
@@ -201,7 +201,7 @@ scope do
 
     p = Product[p.id]
     assert_equal Date.new(2011, 11, 22), p.date_released
-    assert_equal "2011-11-22", p.key.hget(:date_released)
+    assert_equal "2011-11-22", p.get(:date_released)
     assert_equal "2011-11-22", p.date_released.to_s
   end
 
@@ -214,7 +214,7 @@ scope do
 
     p = Product[p.id]
     assert_equal sizes, p.sizes
-    assert_equal %Q[{"XS":1,"S":2,"L":3}], p.key.hget(:sizes)
+    assert_equal %Q[{"XS":1,"S":2,"L":3}], p.get(:sizes)
     assert_equal %Q[{"XS":1,"S":2,"L":3}], p.sizes.to_s
   end
 
@@ -227,7 +227,7 @@ scope do
 
     p = Product[p.id]
     assert_equal stores, p.stores
-    assert_equal %Q(["walmart","marshalls","jcpenny"]), p.key.hget(:stores)
+    assert_equal %Q(["walmart","marshalls","jcpenny"]), p.get(:stores)
     assert_equal %Q(["walmart","marshalls","jcpenny"]), p.stores.to_s
   end
 
@@ -243,7 +243,7 @@ scope do
 
     p = Product[p.id]
     assert_equal 0.001, p.price
-    assert_equal "0.1E-2", p.key.hget(:price)
+    assert_equal "0.1E-2", p.get(:price)
   end
 
   test "Type::Float" do
@@ -253,7 +253,7 @@ scope do
     p.save
     p = Product[p.id]
     assert_equal 4.5, p.rating
-    assert_equal "4.5", p.key.hget(:rating)
+    assert_equal "4.5", p.get(:rating)
   end
 
   test "Type::Boolean" do
@@ -269,7 +269,7 @@ scope do
     p.save
 
     p = Product[p.id]
-    assert_equal "false", p.key.hget(:published)
+    assert_equal nil, p.get(:published)
     assert_equal false, p.published
   end
 
@@ -293,7 +293,7 @@ scope do
     p = Product[p.id]
 
     assert_equal comments, p.comments
-    assert_equal %Q(["Awesome!","Good product","Great."]), p.key.hget(:comments)
+    assert_equal %Q(["Awesome!","Good product","Great."]), p.get(:comments)
     assert_equal %Q(["Awesome!","Good product","Great."]), p.comments.to_s
   end
 end

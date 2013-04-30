@@ -23,7 +23,7 @@ module Ohm
       model.attribute :updated_at, DataTypes::Type::Timestamp
     end
 
-    def save!
+    def save
       self.created_at = Time.now.utc.to_i if new?
       self.updated_at = Time.now.utc.to_i
 

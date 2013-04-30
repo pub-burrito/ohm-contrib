@@ -43,19 +43,29 @@ module Ohm
     end
 
     def delete
-      db.multi do
-        model.all.key.srem(id)
-        model.deleted.key.sadd(id)
-        set :deleted, DELETED_FLAG
-      end
+      redis.queue("MULTI")
+      redis.queue("SREM", model.all.key, id)
+      redis.queue("SADD", model.deleted.key, id)
+      redis.queue("HSET", key, :deleted, DELETED_FLAG)
+      redis.queue("EXEC")
+      redis.commit
+
+      self.deleted = DELETED_FLAG
+
+      return self
     end
 
     def restore
-      db.multi do
-        model.all.key.sadd(id)
-        model.deleted.key.srem(id)
-        set :deleted, nil
-      end
+      redis.queue("MULTI")
+      redis.queue("SADD", model.all.key, id)
+      redis.queue("SREM", model.deleted.key, id)
+      redis.queue("HDEL", key, :deleted)
+      redis.queue("EXEC")
+      redis.commit
+
+      self.deleted = nil
+
+      return self
     end
 
     def deleted?
@@ -68,7 +78,7 @@ module Ohm
       end
 
       def exists?(id)
-        super || key[:deleted].sismember(id)
+        super || redis.call("SISMEMBER", key[:deleted], id) == 1
       end
     end
   end

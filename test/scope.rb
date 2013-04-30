@@ -34,7 +34,7 @@ end
 test "allows custom methods for the defined scopes" do
   post = Post.create
   comment = Comment.create(:status => "approved")
-  post.comments.key.sadd(comment.id)
+  Post.redis.call("SADD", post.comments.key, comment.id)
 
   assert post.comments.approved.is_a?(Ohm::MultiSet)
   assert post.comments.approved.include?(comment)
@@ -43,7 +43,7 @@ end
 test "allows custom methods to be included from a module" do
   post = Post.create
   comment = Comment.create(:status => "rejected")
-  post.comments.key.sadd(comment.id)
+  Post.redis.call("SADD", post.comments.key, comment.id)
 
   assert post.comments.rejected.is_a?(Ohm::MultiSet)
   assert post.comments.rejected.include?(comment)
