@@ -14,7 +14,7 @@ module Ohm
       Boolean   = lambda { |x| Ohm::DataTypes.bool(x) }
       Time      = lambda { |t| t && (t.kind_of?(::Time) ? t : ::Time.parse(t)) }
       Date      = lambda { |d| d && (d.kind_of?(::Date) ? d : ::Date.parse(d)) }
-      Timestamp = lambda { |t| t && UnixTime.at(t.to_i) }
+      Timestamp = lambda { |t| t && UnixTime.at(t.to_f) }
       Hash      = lambda { |h| h && SerializedHash[h.kind_of?(::Hash) ? h : JSON(h)] }
       Array     = lambda { |a| a && SerializedArray.new(a.kind_of?(::Array) ? a : JSON(a)) }
       Set       = lambda { |s| s && SerializedSet.new(s.kind_of?(::Set) ? s : JSON(s)) }
@@ -31,7 +31,7 @@ module Ohm
 
     class UnixTime < Time
       def to_s
-        to_i.to_s
+        to_f.to_s
       end
     end
 
