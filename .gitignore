@@ -27,3 +27,6 @@ pkg
 ## rbenv
 .rbenv-gemsets
 .rbenv-version
+
+# RubyMine
+/.idea
