@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
   s.name = "ohm-contrib"
-  s.version = "1.2"
+  s.version = "1.2.2"
   s.summary = %{A collection of decoupled drop-in modules for Ohm.}
   s.description = %{Includes a couple of core functions such as callbacks, timestamping, typecasting and lots of generic validation routines.}
-  s.author = "Cyril David"
+  s.author = "Cyril David, Philip Wiebe"
   s.email = "cyx.ucron@gmail.com"
   s.homepage = "http://github.com/cyx/ohm-contrib"
 

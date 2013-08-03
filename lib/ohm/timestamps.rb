@@ -24,8 +24,8 @@ module Ohm
     end
 
     def save!
-      self.created_at = Time.now.utc.to_f if new?
-      self.updated_at = Time.now.utc.to_f
+      self.created_at = DataTypes::ISO8601Time.now.utc if new?
+      self.updated_at = DataTypes::ISO8601Time.now.utc
 
       super
     end

@@ -14,7 +14,7 @@ module Ohm
       Boolean   = lambda { |x| Ohm::DataTypes.bool(x) }
       Time      = lambda { |t| t && (t.kind_of?(::Time) ? t : ::Time.parse(t)) }
       Date      = lambda { |d| d && (d.kind_of?(::Date) ? d : ::Date.parse(d)) }
-      Timestamp = lambda { |t| t && UnixTime.at(t.to_f) }
+      Timestamp = lambda { |t| t && (t.kind_of?(::Time) ? t : ISO8601Time.parse(t).utc) }
       Hash      = lambda { |h| h && SerializedHash[h.kind_of?(::Hash) ? h : JSON(h)] }
       Array     = lambda { |a| a && SerializedArray.new(a.kind_of?(::Array) ? a : JSON(a)) }
       Set       = lambda { |s| s && SerializedSet.new(s.kind_of?(::Set) ? s : JSON(s)) }
@@ -26,6 +26,12 @@ module Ohm
       when "true", "1"  then true
       else
         !! val
+      end
+    end
+
+    class ISO8601Time < Time
+      def to_s
+        utc.iso8601(6)
       end
     end
 
